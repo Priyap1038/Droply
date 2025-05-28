@@ -6,8 +6,6 @@
 // export default config;
 
 
-import {heroui} from "@heroui/theme"
-
 /** @type {import('tailwindcss').Config} */
 const config = {
   content: [
@@ -24,7 +22,10 @@ const config = {
     },
   },
   darkMode: "class",
-  plugins: [heroui()],
+  plugins: {
+    "@tailwindcss/postcss": {}
+  },
 }
 
-module.exports = config;
+// module.exports = config;
+export default config
