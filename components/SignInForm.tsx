@@ -8,7 +8,6 @@ import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { Divider } from "@heroui/divider";
 import { Input } from "@heroui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { h1 } from "framer-motion/client";
 import { AlertCircle, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,7 +16,7 @@ import {useForm} from "react-hook-form";
 import {z} from "zod";
 
 export default function SignInForm(){
-  const router = useRouter();
+  // const router = useRouter();
   const {signIn, isLoaded, setActive} = useSignIn();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authError, setAuthError] = useState<string |null>(null);
@@ -153,7 +152,7 @@ export default function SignInForm(){
 
       <CardFooter className="flex justify-center py-4">
         <p className="text-sm text-default-600">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link
             href="/sign-up"
             className="text-primary hover:underline font-medium"

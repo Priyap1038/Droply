@@ -28,11 +28,11 @@ import {
 
 export default function SignUpForm() {
     const router = useRouter();
-  const { verifying, setVerifying } = useState(false);
-  const {isSubmitting, setIsSubmitting} = useState(false);
-  const {authError, setAuthError} = useState<string | null>(null);
-  const {verificationCode, setVerificationCode} = useState("");
-  const {verificationError, setVerificationError} = useState<string | null>(null);
+  const [ verifying, setVerifying ] = useState<Boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [verificationError, setVerificationError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { signUp, isLoaded, setActive } = useSignUp();
@@ -68,7 +68,7 @@ export default function SignUpForm() {
     } catch (error: any) {
         console.log("Signuo error", error);
         setAuthError(
-            error.errors?.[0]?.massage || "An error occured during the signup, Please try again"
+            error.errors?.[0]?.message || "An error occured during the signup, Please try again"
         )
     } finally{
         setIsSubmitting(false)
@@ -79,8 +79,8 @@ export default function SignUpForm() {
     e.preventDefault()
 
     if(!isLoaded || !signUp) return;
-    isSubmitting(true);
-    setAuthError(true);
+    setIsSubmitting(true);
+    setAuthError(null);
 
     try {
        const result= await signUp.attemptEmailAddressVerification({
@@ -94,7 +94,7 @@ export default function SignUpForm() {
         }else{
             console.error("verification in complete", result)
             setVerificationError(
-              "VErification could not be complete"
+              "Verification could not be complete"
             );
         }
 
@@ -116,7 +116,7 @@ export default function SignUpForm() {
             Verify Your Email
           </h1>
           <p className="text-default-500 text-center">
-            We've sent a verification code to your email
+            We&apos;ve sent a verification code to your email
           </p>
         </CardHeader>
 

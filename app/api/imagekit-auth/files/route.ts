@@ -1,11 +1,8 @@
 import { db } from "@/lib/db";
 import { files } from "@/lib/db/schema";
 import { auth } from "@clerk/nextjs/server";
-import { user } from "@heroui/theme";
-import { error } from "console";
 import { eq, and, isNull } from "drizzle-orm";
 import { NextRequest, NextResponse } from "next/server";
-import { useId } from "react";
 
 export async function GET(request: NextRequest) {
   try {
@@ -46,7 +43,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(userFiles);
   } catch (error) {
     return NextResponse.json(
-      { error: "Error to fetch the data" },
+      { "error": "Error to fetch the data"},
       { status: 500 }
     );
   }

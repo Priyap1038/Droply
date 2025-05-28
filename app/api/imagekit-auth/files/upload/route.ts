@@ -1,108 +1,56 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { files } from "@/lib/db/schema";
-import { auth } from "@clerk/nextjs/server";
-import { error } from "console";
-import {eq, and, } from "drizzle-orm";
-import ImageKit from "imagekit";
-import { NextRequest, NextResponse } from "next/server";
-import { arrayBuffer } from "stream/consumers";
-import {v4 as uuidv4} from "uuid";
 
-
-const imagekit = new ImageKit({
-    publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY ||"",
-    privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "",
-    urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || "",
-})
-
-
-export async function POST(request:NextRequest) {
-    try {
-         const {userId} = await auth();
-            if(!userId){
-                return NextResponse.json({error:"Unauthorized"},{status:401});
-            }
-
-            // parse formData
-           const formData = await request.formData();
-           const file = formData.get("file") as File
-           const formUserId = formData.get("userId") as string
-           const parentId = formData.get("parentId") as string || null
-
-           if(formUserId != userId){
-            return NextResponse.json({
-                error:"Unathorized"
-            },{status:401});
-           }
-
-           if(!file){
-              return NextResponse.json({
-                error:"No file provide"
-            },{status:401});
-           }
-
-           if(parentId){
-            const [parentFolder] = await db.select()
-            .from(files)
-            .where(
-                and(
-                    eq(files.id, parentId),
-                    eq(files.userId, userId),
-                    eq(files.isFolder, true)
-                )
-            )
-           }
-
-           if(!parentId){
-        return NextResponse.json({error:"Parent folder not found"}, {status:401})
-     }
-
-     if(!file.type.startsWith("image/") && file.type !== "application/pdf"){
-         return NextResponse.json({error:"Only images and pdf are supported"},{status:401})
-     }
-
-    //  transfer to imagekit / covert file to buffer
-     const buffer = await file.arrayBuffer();
-     const fileBuffer = Buffer.from(buffer);
-
-     const folderPath = parentId ? `/droply/${userId}/folder/${parentId}` : `/droply/${userId}`;
-
-     const originalFilename = file.name;
-     const fileExtension = originalFilename.split(".").pop() || "";
-
-    //  check for empty extension
-    // validation for not storing exe,pdf
-     const uniqueFilename = `${uuidv4()}.${fileExtension}`;
-
-    //  upload the file
-    const uploadResponse = await imagekit.upload({
-        file: fileBuffer,
-        fileName:uniqueFilename,
-        folder: folderPath,
-        useUniqueFileName: false
-    })
-
-    const fileData ={
-     name: originalFilename,
-     path: uploadResponse.filePath,
-     size: file.size,
-     type: file.type,
-     fileUrl:uploadResponse.url,
-     thumbnailUrl: uploadResponse.thumbnailUrl || null,
-     userId: userId,
-     parentId:parentId,
-     isFolder:false, 
-     isStarred:false,
-     isTrash:false,
+export async function POST(request: NextRequest) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const [newFile] =await db.insert(files).values(fileData).returning();
+    // Parse request body
+    const body = await request.json();
+    const { imagekit, userId: bodyUserId } = body;
+
+    // Verify the user is uploading to their own account
+    if (bodyUserId !== userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Validate ImageKit response
+    if (!imagekit || !imagekit.url) {
+      return NextResponse.json(
+        { error: "Invalid file upload data" },
+        { status: 400 }
+      );
+    }
+
+    // Extract file information from ImageKit response
+    const fileData = {
+      name: imagekit.name || "Untitled",
+      path: imagekit.filePath || `/droply/${userId}/${imagekit.name}`,
+      size: imagekit.size || 0,
+      type: imagekit.fileType || "image",
+      fileUrl: imagekit.url,
+      thumbnailUrl: imagekit.thumbnailUrl || null,
+      userId: userId,
+      parentId: null, // Root level by default
+      isFolder: false,
+      isStarred: false,
+      isTrash: false,
+    };
+
+    // Insert file record into database
+    const [newFile] = await db.insert(files).values(fileData).returning();
 
     return NextResponse.json(newFile);
-
-    } catch (error) {
-        return NextResponse.json({error:"Failed to upload file"},
-            {status:401}
-        )
-    }
+  } catch (error) {
+    console.error("Error saving file:", error);
+    return NextResponse.json(
+      { error: "Failed to save file information" },
+      { status: 500 }
+    );
+  }
 }
