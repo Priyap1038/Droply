@@ -26,9 +26,9 @@ export default function RootLayout({
         <body
           className={`${inter.variable} antialiased bg-background text-foreground`}
           >
-          <ClerkProvider>
+          {/* <ClerkProvider> */}
           <Providers>{children}</Providers>
-    </ClerkProvider>
+    {/* </ClerkProvider> */}
         </body>
             {/* </head> */}
       </html>
