@@ -4,10 +4,14 @@ import { useState, useCallback, useEffect } from "react";
 import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Tabs, Tab } from "@heroui/tabs";
 import { FileUp, FileText, User } from "lucide-react";
-import FileUploadForm from "@/components/FileUploadForm";
-import FileList from "@/components/FileList";
-import UserProfile from "@/components/UserProfile";
+// import FileUploadForm from "@/components/FileUploadForm";
+import FileUploadForm from "components/FileUploadForm"
+import FileList from "components/FileList";
+import UserProfile from "components/UserProfile";
 import { useSearchParams } from "next/navigation";
+
+// 👇 import modal/dialog from HeroUI (or shadcn/ui if you prefer)
+import { Modal, ModalContent, ModalHeader, ModalBody } from "@heroui/modal";
 
 interface DashboardContentProps {
   userId: string;
@@ -24,6 +28,9 @@ export default function DashboardContent({
   const [activeTab, setActiveTab] = useState<string>("files");
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [currentFolder, setCurrentFolder] = useState<string | null>(null);
+
+  // 👇 state for preview modal
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Set the active tab based on URL parameter
   useEffect(() => {
@@ -45,7 +52,7 @@ export default function DashboardContent({
   return (
     <>
       <div className="mb-8">
-        <h2 className="text-4xl font-bold text-default-900">
+        <h2 className="text-4xl font-bold text-default-900 dark:text-white">
           Hi,{" "}
           <span className="text-primary">
             {userName?.length > 10
@@ -54,7 +61,7 @@ export default function DashboardContent({
           </span>
           !
         </h2>
-        <p className="text-default-600 mt-2 text-lg">
+        <p className="text-default-600 dark:text-gray-400 mt-2 text-lg">
           Your images are waiting for you.
         </p>
       </div>
@@ -66,8 +73,8 @@ export default function DashboardContent({
         selectedKey={activeTab}
         onSelectionChange={(key) => setActiveTab(key as string)}
         classNames={{
-          tabList: "gap-6",
-          tab: "py-3",
+          tabList: "gap-6 border-b border-default-200 dark:border-gray-700",
+          tab: "py-3 text-default-600 dark:text-gray-300 hover:text-primary transition-colors duration-300 data-[selected=true]:text-primary data-[selected=true]:border-b-2 data-[selected=true]:border-primary",
           cursor: "bg-primary",
         }}
       >
@@ -81,11 +88,14 @@ export default function DashboardContent({
           }
         >
           <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Upload Section */}
             <div className="lg:col-span-1">
-              <Card className="border border-default-200 bg-default-50 shadow-sm hover:shadow-md transition-shadow">
+              <Card className="border border-default-200 bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-shadow">
                 <CardHeader className="flex gap-3">
                   <FileUp className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-semibold">Upload</h2>
+                  <h2 className="text-xl font-semibold text-default-900 dark:text-white">
+                    Upload
+                  </h2>
                 </CardHeader>
                 <CardBody>
                   <FileUploadForm
@@ -97,18 +107,24 @@ export default function DashboardContent({
               </Card>
             </div>
 
+            {/* File List Section */}
             <div className="lg:col-span-2">
-              <Card className="border border-default-200 bg-default-50 shadow-sm hover:shadow-md transition-shadow">
+              <Card className="border border-default-200 bg-white dark:bg-gray-800 shadow-sm hover:shadow-lg transition-shadow">
                 <CardHeader className="flex gap-3">
                   <FileText className="h-5 w-5 text-primary" />
-                  <h2 className="text-xl font-semibold">Your Files</h2>
+                  <h2 className="text-xl font-semibold text-default-900 dark:text-white">
+                    Your Files
+                  </h2>
                 </CardHeader>
                 <CardBody>
                   <FileList
                     userId={userId}
                     refreshTrigger={refreshTrigger}
                     onFolderChange={handleFolderChange}
+                    // 👇 pass down image click handler
+                    onImageClick={(url: string) => setPreviewImage(url)}
                   />
+
                 </CardBody>
               </Card>
             </div>
@@ -129,6 +145,22 @@ export default function DashboardContent({
           </div>
         </Tab>
       </Tabs>
+
+      {/* 🔹 Image Preview Modal */}
+      <Modal isOpen={!!previewImage} onClose={() => setPreviewImage(null)} size="5xl">
+        <ModalContent>
+          <ModalHeader>Image Preview</ModalHeader>
+          <ModalBody>
+            {previewImage && (
+              <img
+                src={previewImage}
+                alt="Preview"
+                className="w-full h-auto rounded"
+              />
+            )}
+          </ModalBody>
+        </ModalContent>
+      </Modal>
     </>
   );
 }

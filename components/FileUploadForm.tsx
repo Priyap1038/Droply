@@ -21,6 +21,9 @@ import {
   ModalFooter,
 } from "@heroui/modal";
 import axios from "axios";
+import { useAuth } from "@clerk/nextjs";
+
+
 
 interface FileUploadFormProps {
   userId: string;
@@ -33,6 +36,9 @@ export default function FileUploadForm({
   onUploadSuccess,
   currentFolder = null,
 }: FileUploadFormProps) {
+
+  let {getToken} = useAuth();
+
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -102,10 +108,14 @@ export default function FileUploadForm({
     setError(null);
 
     try {
+      let token = await getToken();
+
       await axios.post("/api/files/upload", formData, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          // "Content-Type": "multipart/form-data",
+          Authorization:`Bearer ${token}`,
         },
+        // withCredentials: true,
         onUploadProgress: (progressEvent) => {
           if (progressEvent.total) {
             const percentCompleted = Math.round(
@@ -129,6 +139,9 @@ export default function FileUploadForm({
       if (onUploadSuccess) {
         onUploadSuccess();
       }
+
+      console.log("form dta is collected",[...formData.entries()])
+
     } catch (error) {
       console.error("Error uploading file:", error);
       setError("Failed to upload file. Please try again.");
@@ -155,7 +168,7 @@ export default function FileUploadForm({
     setCreatingFolder(true);
 
     try {
-      await axios.post("/api/folders/create", {
+      await axios.post("/api/folders", {
         name: folderName.trim(),
         userId: userId,
         parentId: currentFolder,
@@ -186,6 +199,9 @@ export default function FileUploadForm({
       setCreatingFolder(false);
     }
   };
+
+
+
 
   return (
     <div className="space-y-4">
@@ -245,6 +261,7 @@ export default function FileUploadForm({
               onChange={handleFileChange}
               className="hidden"
               accept="image/*"
+              aria-label="Upload"
             />
           </div>
         ) : (
@@ -292,6 +309,7 @@ export default function FileUploadForm({
                 size="sm"
                 showValueLabel={true}
                 className="max-w-full"
+                aria-label="File upload progress"
               />
             )}
 
@@ -325,11 +343,7 @@ export default function FileUploadForm({
         isOpen={folderModalOpen}
         onOpenChange={setFolderModalOpen}
         backdrop="blur"
-        classNames={{
-          base: "border border-default-200 bg-default-5",
-          header: "border-b border-default-200",
-          footer: "border-t border-default-200",
-        }}
+        className="bg-black"
       >
         <ModalContent>
           <ModalHeader className="flex gap-2 items-center">

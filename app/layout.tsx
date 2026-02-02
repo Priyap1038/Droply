@@ -20,17 +20,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+      <ClerkProvider> 
     <html lang="en" suppressHydrationWarning>
       {/* <head> */}
 
         <body
           className={`${inter.variable} antialiased bg-background text-foreground`}
           >
-          <ClerkProvider>
           <Providers>{children}</Providers>
-    </ClerkProvider>
         </body>
             {/* </head> */}
       </html>
+     </ClerkProvider>
   );
 }

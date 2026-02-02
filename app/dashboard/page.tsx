@@ -1,12 +1,14 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import DashboardContent from "@/components/DashboardContent";
+import DashboardContent from "components/DashboardContent";
 import { CloudUpload } from "lucide-react";
-import Navbar from "@/components/Navbar";
+import Navbar from "components/Navbar";
 
 export default async function Dashboard() {
   const { userId } = await auth();
   const user = await currentUser();
+
+  const currentYear = new Date().getFullYear();
 
   if (!userId) {
     redirect("/sign-in");
@@ -21,6 +23,8 @@ export default async function Dashboard() {
         imageUrl: user.imageUrl,
         username: user.username,
         emailAddress: user.emailAddresses?.[0]?.emailAddress,
+        createdAt: user.createdAt?.toString(),
+        updateAt: user.updatedAt?.toString(),
       }
     : null;
 
@@ -48,7 +52,7 @@ export default async function Dashboard() {
               <h2 className="text-lg font-bold">Droply</h2>
             </div>
             <p className="text-default-500 text-sm">
-              &copy; {new Date().getFullYear()} Droply
+              &copy; {currentYear} Droply
             </p>
           </div>
         </div>

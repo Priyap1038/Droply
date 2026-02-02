@@ -2,8 +2,8 @@
 
 import { File, Star, Trash } from "lucide-react";
 import { Tabs, Tab } from "@heroui/tabs";
-import Badge from "@/components/ui/Badge";
-import type { File as FileType } from "@/lib/db/schema";
+import Badge from "./ui/Badge";
+import type { File as FileType } from "../lib/db/schema";
 
 interface FileTabsProps {
   activeTab: string;

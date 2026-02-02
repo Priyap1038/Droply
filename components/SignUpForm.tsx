@@ -28,7 +28,7 @@ import {
 
 export default function SignUpForm() {
     const router = useRouter();
-  const [ verifying, setVerifying ] = useState<Boolean>(false);
+  const [ verifying, setVerifying ] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [verificationCode, setVerificationCode] = useState("");
@@ -66,7 +66,7 @@ export default function SignUpForm() {
         })
         setVerifying(true);
     } catch (error: any) {
-        console.log("Signuo error", error);
+        console.log("Signup error", error);
         setAuthError(
             error.errors?.[0]?.message || "An error occured during the signup, Please try again"
         )

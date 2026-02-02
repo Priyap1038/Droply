@@ -19,36 +19,43 @@ export default function FileActionButtons({
   onEmptyTrash,
 }: FileActionButtonsProps) {
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
-      <h2 className="text-xl sm:text-2xl font-semibold truncate max-w-full">
-        {activeTab === "all" &&
-          (folderPath.length > 0
-            ? folderPath[folderPath.length - 1].name
-            : "All Files")}
-        {activeTab === "starred" && "Starred Files"}
-        {activeTab === "trash" && "Trash"}
-      </h2>
-      <div className="flex gap-2 sm:gap-3 self-end sm:self-auto">
-        <Button
-          variant="flat"
-          size="sm"
-          onClick={onRefresh}
-          startContent={<RefreshCw className="h-4 w-4" />}
-        >
-          Refresh
-        </Button>
-        {activeTab === "trash" && trashCount > 0 && (
-          <Button
-            color="danger"
-            variant="flat"
-            size="sm"
-            onClick={onEmptyTrash}
-            startContent={<Trash className="h-4 w-4" />}
-          >
-            Empty Trash
-          </Button>
-        )}
-      </div>
-    </div>
+
+<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6 bg-default-50 dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-sm">
+  <h2 className="text-xl sm:text-2xl font-semibold truncate max-w-full text-default-900 dark:text-white">
+    {activeTab === "all" &&
+      (folderPath.length > 0
+        ? folderPath[folderPath.length - 1].name
+        : "All Files")}
+    {activeTab === "starred" && "Starred Files"}
+    {activeTab === "trash" && "Trash"}
+  </h2>
+
+  <div className="flex gap-3 self-end sm:self-auto">
+    <Button
+      variant="flat"
+      size="sm"
+      onClick={onRefresh}
+      startContent={<RefreshCw className="h-4 w-4" />}
+      className="text-default-800 dark:text-gray-200 hover:bg-default-100 dark:hover:bg-gray-700 transition-colors rounded-md"
+    >
+      Refresh
+    </Button>
+
+    {activeTab === "trash" && trashCount > 0 && (
+      <Button
+        color="danger"
+        variant="flat"
+        size="sm"
+        onClick={onEmptyTrash}
+        startContent={<Trash className="h-4 w-4" />}
+        className="text-red-600 hover:bg-red-100 dark:hover:bg-red-800 transition-colors rounded-md"
+      >
+        Empty Trash
+      </Button>
+    )}
+  </div>
+</div>
+
+
   );
 }

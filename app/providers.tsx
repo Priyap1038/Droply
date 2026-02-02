@@ -8,6 +8,7 @@ import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { ImageKitProvider } from "imagekitio-next";
 import { ToastProvider } from "@heroui/toast";
 import { createContext, useContext } from "react";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export interface ProvidersProps {
   children: React.ReactNode;
@@ -51,17 +52,19 @@ export function Providers({ children, themeProps }: ProvidersProps) {
   const router = useRouter();
 
   return (
-    <HeroUIProvider navigate={router.push}>
-      <ImageKitProvider
-        authenticator={authenticator}
-        publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || ""}
-        urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || ""}
-      >
-        <ImageKitAuthContext.Provider value={{ authenticate: authenticator }}>
-          <ToastProvider placement="top-right" />
-          <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
-        </ImageKitAuthContext.Provider>
-      </ImageKitProvider>
-    </HeroUIProvider>
+    <ClerkProvider>
+      <HeroUIProvider navigate={router.push}>
+        <ImageKitProvider
+          authenticator={authenticator}
+          publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || ""}
+          urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || ""}
+        >
+          <ImageKitAuthContext.Provider value={{ authenticate: authenticator }}>
+            <ToastProvider placement="top-right" />
+            <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
+          </ImageKitAuthContext.Provider>
+        </ImageKitProvider>
+      </HeroUIProvider>
+    </ClerkProvider>
   );
 }

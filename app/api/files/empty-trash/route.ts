@@ -7,7 +7,7 @@ import ImageKit from "imagekit";
 
 // Initialize ImageKit with your credentials
 const imagekit = new ImageKit({
-  publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY || "",
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY || "",
   privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "",
   urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || "",
 });
@@ -56,7 +56,12 @@ export async function DELETE() {
               });
 
               if (searchResults && searchResults.length > 0) {
-                await imagekit.deleteFile(searchResults[0].fileId);
+                const item = searchResults[0];
+
+                if("fileId" in item){
+
+                  await imagekit.deleteFile(item.fileId);
+                }
               } else {
                 await imagekit.deleteFile(imagekitFileId);
               }

@@ -10,32 +10,36 @@ import {
   TableRow,
   TableCell,
 } from "@heroui/table";
+import {Tooltip} from "@nextui-org/react";
 import { Divider } from "@heroui/divider";
-import { Tooltip } from "@heroui/tooltip";
 import { Card } from "@heroui/card";
 import { addToast } from "@heroui/toast";
 import { formatDistanceToNow, format } from "date-fns";
-import type { File as FileType } from "@/lib/db/schema";
+import type { File as FileType } from "lib/db/schema";
 import axios from "axios";
-import ConfirmationModal from "@/components/ui/ConfirmationModal";
-import FileEmptyState from "@/components/FileEmptyState";
-import FileIcon from "@/components/FileIcon";
-import FileActions from "@/components/FileActions";
-import FileLoadingState from "@/components/FileLoadingState";
-import FileTabs from "@/components/FileTabs";
-import FolderNavigation from "@/components/FolderNavigation";
-import FileActionButtons from "@/components/FileActionButtons";
+
+import FileEmptyState from "./FileEmptyState";
+import FileIcon from "./FileIcon";
+import FileActions from "./FileActions";
+import FileLoadingState from "./FileLoadingState";
+import FileTabs from "./FileTabs";
+import FolderNavigation from "./FolderNavigation";
+import FileActionButtons from "./FileActionButtons";
+import ConfirmationModal from "./ui/ConfirmationModal";
+
 
 interface FileListProps {
   userId: string;
   refreshTrigger?: number;
   onFolderChange?: (folderId: string | null) => void;
+  onImageClick? : (url:string) => void;
 }
 
 export default function FileList({
   userId,
   refreshTrigger = 0,
   onFolderChange,
+  onImageClick,
 }: FileListProps) {
   const [files, setFiles] = useState<FileType[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +64,9 @@ export default function FileList({
       }
 
       const response = await axios.get(url);
+      console.log(response.data)
       setFiles(response.data);
+
     } catch (error) {
       console.error("Error fetching files:", error);
       addToast({
@@ -76,6 +82,8 @@ export default function FileList({
   // Fetch files when userId, refreshTrigger, or currentFolder changes
   useEffect(() => {
     fetchFiles();
+    console.log("fetched file in filelist",fetchFiles())
+    console.log("present files",files)
   }, [userId, refreshTrigger, currentFolder]);
 
   // Filter files based on active tab
@@ -227,11 +235,11 @@ export default function FileList({
   const handleDownloadFile = async (file: FileType) => {
     try {
       // Show loading toast
-      // const loadingToastId = addToast({
-      //   title: "Preparing Download",
-      //   description: `Getting "${file.name}" ready for download...`,
-      //   color: "primary",
-      // });
+      const loadingToastId = addToast({
+        title: "Preparing Download",
+        description: `Getting "${file.name}" ready for download...`,
+        color: "primary",
+      });
 
       // For images, we can use the ImageKit URL directly with optimized settings
       if (file.type.startsWith("image/")) {
@@ -375,7 +383,12 @@ export default function FileList({
     if (file.isFolder) {
       navigateToFolder(file.id, file.name);
     } else if (file.type.startsWith("image/")) {
-      openImageViewer(file);
+      if(onImageClick){
+        onImageClick(file.fileUrl);
+      }else{
+
+        openImageViewer(file);
+      }
     }
   };
 
@@ -454,6 +467,7 @@ export default function FileList({
                     }`}
                     onClick={() => handleItemClick(file)}
                   >
+                    {/* hello  */}
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <FileIcon file={file} />
@@ -463,7 +477,8 @@ export default function FileList({
                               {file.name}
                             </span>
                             {file.isStarred && (
-                              <Tooltip content="Starred">
+                              <Tooltip
+                               content="Starred">
                                 <Star
                                   className="h-4 w-4 text-yellow-400"
                                   fill="currentColor"
@@ -489,6 +504,29 @@ export default function FileList({
                         </div>
                       </div>
                     </TableCell>
+
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        {/* 🔹 Show thumbnail only for images */}
+                        {file.type.startsWith("image/") && file.fileUrl && (
+                          <img
+                            src={file.fileUrl}
+                            alt={file.name}
+                            className="w-10 h-10 object-cover rounded"
+                          />
+                        )}
+
+                        {/* Fallback icon for non-images */}
+                        <FileIcon file={file} />
+
+                        <div>
+                          <div className="font-medium flex items-center gap-2 text-default-800">
+                            <span>{file.name}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </TableCell>
+
                     <TableCell className="hidden sm:table-cell">
                       <div className="text-xs text-default-500">
                         {file.isFolder ? "Folder" : file.type}
@@ -499,10 +537,10 @@ export default function FileList({
                         {file.isFolder
                           ? "-"
                           : file.size < 1024
-                            ? `${file.size} B`
-                            : file.size < 1024 * 1024
-                              ? `${(file.size / 1024).toFixed(1)} KB`
-                              : `${(file.size / (1024 * 1024)).toFixed(1)} MB`}
+                          ? `${file.size} B`
+                          : file.size < 1024 * 1024
+                          ? `${(file.size / 1024).toFixed(1)} KB`
+                          : `${(file.size / (1024 * 1024)).toFixed(1)} MB`}
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
