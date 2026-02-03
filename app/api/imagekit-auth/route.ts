@@ -1,20 +1,20 @@
-export const runtime = "node.js";
+export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import ImageKit from "imagekit"
 
 const imagekit = new ImageKit({
-    publicKey: process.env.IMAGEKIT_PUBLIC_KEY ||"",
-    privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "",
-    urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || "",
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY || "",
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY || "",
+  urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || "",
 })
 
-export async function GET(){
+export async function GET() {
   try {
-    const {userId} = await auth();
-    if(!userId){
-        return NextResponse.json({error:"Unauthorized"},{status:401});
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const authParams = imagekit.getAuthenticationParameters();
@@ -22,6 +22,6 @@ export async function GET(){
     return NextResponse.json(authParams);
   } catch (error) {
     console.log(error);
-    return NextResponse.json({error:"Failed to generate authentication parameters for imagekit"},{status:500});
+    return NextResponse.json({ error: "Failed to generate authentication parameters for imagekit" }, { status: 500 });
   }
 }
