@@ -10,7 +10,7 @@ import {
   TableRow,
   TableCell,
 } from "@heroui/table";
-import {Tooltip} from "@nextui-org/react";
+import { Tooltip } from "@heroui/tooltip";
 import { Divider } from "@heroui/divider";
 import { Card } from "@heroui/card";
 import { addToast } from "@heroui/toast";
@@ -32,7 +32,7 @@ interface FileListProps {
   userId: string;
   refreshTrigger?: number;
   onFolderChange?: (folderId: string | null) => void;
-  onImageClick? : (url:string) => void;
+  onImageClick?: (url: string) => void;
 }
 
 export default function FileList({
@@ -82,8 +82,8 @@ export default function FileList({
   // Fetch files when userId, refreshTrigger, or currentFolder changes
   useEffect(() => {
     fetchFiles();
-    console.log("fetched file in filelist",fetchFiles())
-    console.log("present files",files)
+    console.log("fetched file in filelist", fetchFiles())
+    console.log("present files", files)
   }, [userId, refreshTrigger, currentFolder]);
 
   // Filter files based on active tab
@@ -124,9 +124,8 @@ export default function FileList({
       const file = files.find((f) => f.id === fileId);
       addToast({
         title: file?.isStarred ? "Removed from Starred" : "Added to Starred",
-        description: `"${file?.name}" has been ${
-          file?.isStarred ? "removed from" : "added to"
-        } your starred files`,
+        description: `"${file?.name}" has been ${file?.isStarred ? "removed from" : "added to"
+          } your starred files`,
         color: "success",
       });
     } catch (error) {
@@ -155,9 +154,8 @@ export default function FileList({
       const file = files.find((f) => f.id === fileId);
       addToast({
         title: responseData.isTrash ? "Moved to Trash" : "Restored from Trash",
-        description: `"${file?.name}" has been ${
-          responseData.isTrash ? "moved to trash" : "restored"
-        }`,
+        description: `"${file?.name}" has been ${responseData.isTrash ? "moved to trash" : "restored"
+          }`,
         color: "success",
       });
     } catch (error) {
@@ -383,9 +381,9 @@ export default function FileList({
     if (file.isFolder) {
       navigateToFolder(file.id, file.name);
     } else if (file.type.startsWith("image/")) {
-      if(onImageClick){
+      if (onImageClick) {
         onImageClick(file.fileUrl);
-      }else{
+      } else {
 
         openImageViewer(file);
       }
@@ -460,11 +458,10 @@ export default function FileList({
                 {filteredFiles.map((file) => (
                   <TableRow
                     key={file.id}
-                    className={`hover:bg-default-100 transition-colors ${
-                      file.isFolder || file.type.startsWith("image/")
+                    className={`hover:bg-default-100 transition-colors ${file.isFolder || file.type.startsWith("image/")
                         ? "cursor-pointer"
                         : ""
-                    }`}
+                      }`}
                     onClick={() => handleItemClick(file)}
                   >
                     {/* hello  */}
@@ -478,7 +475,7 @@ export default function FileList({
                             </span>
                             {file.isStarred && (
                               <Tooltip
-                               content="Starred">
+                                content="Starred">
                                 <Star
                                   className="h-4 w-4 text-yellow-400"
                                   fill="currentColor"
@@ -537,10 +534,10 @@ export default function FileList({
                         {file.isFolder
                           ? "-"
                           : file.size < 1024
-                          ? `${file.size} B`
-                          : file.size < 1024 * 1024
-                          ? `${(file.size / 1024).toFixed(1)} KB`
-                          : `${(file.size / (1024 * 1024)).toFixed(1)} MB`}
+                            ? `${file.size} B`
+                            : file.size < 1024 * 1024
+                              ? `${(file.size / 1024).toFixed(1)} KB`
+                              : `${(file.size / (1024 * 1024)).toFixed(1)} MB`}
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
