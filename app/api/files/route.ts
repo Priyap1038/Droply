@@ -1,4 +1,4 @@
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 import { auth } from "@clerk/nextjs/server";
 import { eq, and, isNull } from "drizzle-orm";
@@ -48,10 +48,11 @@ export async function GET(request: NextRequest) {
   } catch (error: unknown) {
     console.error("Error fetching files:", error);
 
-    let message = error instanceof Error? error.message: "Unknown error";
+    let message = error instanceof Error ? error.message : "Unknown error";
 
     return NextResponse.json(
-      {error: message
+      {
+        error: message
       },
       { status: 500 }
     );

@@ -1,4 +1,4 @@
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 import { files } from "lib/db/schema";
 import { auth } from "@clerk/nextjs/server";
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       fileUrl: uploaded.url,
       thumbnailUrl: uploaded.thumbnailUrl || null,
       userId: userId,
-      parentId: parentId? parentId : null,
+      parentId: parentId ? parentId : null,
       isFolder: false,
       isStarred: false,
       isTrash: false,
@@ -68,8 +68,8 @@ export async function POST(request: NextRequest) {
       message: "File uploaded successfully",
       file: newFile,
     },
-    {status: 200}
-  );
+      { status: 200 }
+    );
 
   } catch (error) {
     console.error("Error uploading file:", error);
