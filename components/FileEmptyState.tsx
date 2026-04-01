@@ -7,21 +7,23 @@ interface FileEmptyStateProps {
 
 export default function FileEmptyState({ activeTab }: FileEmptyStateProps) {
   return (
-    <Card className="border border-default-200 bg-default-50">
-      <CardBody className="text-center py-16">
-        <File className="h-16 w-16 mx-auto text-primary/50 mb-6" />
-        <h3 className="text-xl font-medium mb-2">
-          {activeTab === "all" && "No files available"}
-          {activeTab === "starred" && "No starred files"}
-          {activeTab === "trash" && "Trash is empty"}
+    <Card shadow="none" className="border border-border/50 bg-muted/20 rounded-3xl">
+      <CardBody className="text-center py-24">
+        <div className="bg-primary/10 h-24 w-24 mx-auto rounded-full flex items-center justify-center mb-8 ring-8 ring-primary/5">
+          <File className="h-10 w-10 text-primary opacity-80" />
+        </div>
+        <h3 className="text-2xl font-extrabold text-foreground mb-3 tracking-tight">
+          {activeTab === "all" && "Your Library is Waiting"}
+          {activeTab === "starred" && "No Favorites Yet"}
+          {activeTab === "trash" && "Clean Slate"}
         </h3>
-        <p className="text-default-500 mt-2 max-w-md mx-auto">
+        <p className="text-muted-foreground font-medium max-w-sm mx-auto leading-relaxed">
           {activeTab === "all" &&
-            "Upload your first file to get started with your personal cloud storage"}
+            "Start your secure image journey by uploading your first asset to the cloud."}
           {activeTab === "starred" &&
-            "Mark important files with a star to find them quickly when you need them"}
+            "Highlight your most important images for instant access from your dashboard."}
           {activeTab === "trash" &&
-            "Files you delete will appear here for 30 days before being permanently removed"}
+            "Your workspace is currently clear. Deleted files will stay here for 30 days."}
         </p>
       </CardBody>
     </Card>

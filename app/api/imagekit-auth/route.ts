@@ -1,3 +1,5 @@
+export const runtime = "node.js";
+
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import ImageKit from "imagekit"
@@ -19,6 +21,7 @@ export async function GET(){
 
     return NextResponse.json(authParams);
   } catch (error) {
+    console.log(error);
     return NextResponse.json({error:"Failed to generate authentication parameters for imagekit"},{status:500});
   }
 }

@@ -61,7 +61,9 @@ export function Providers({ children, themeProps }: ProvidersProps) {
         >
           <ImageKitAuthContext.Provider value={{ authenticate: authenticator }}>
             <ToastProvider placement="top-right" />
-            <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
+            <NextThemesProvider attribute="class" defaultTheme="light" enableSystem={false} {...themeProps}>
+              {children}
+            </NextThemesProvider>
           </ImageKitAuthContext.Provider>
         </ImageKitProvider>
       </HeroUIProvider>

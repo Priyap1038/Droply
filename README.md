@@ -1,36 +1,119 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Droply 🚀
 
-## Getting Started
+Droply is a **Dockerized file sharing and management platform** built using **Next.js 15**.  
+It focuses on secure authentication, scalable backend architecture, and a clean modern UI.
 
-First, run the development server:
+> ⚠️ This project is currently **under active development**.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## ✨ Features
+
+- 🔐 Authentication & user management using **Clerk**
+- 🐳 Dockerized development & deployment setup
+- 📁 File upload & management using **ImageKit**
+- 🗂️ Database integration with **Drizzle ORM**
+- ☁️ Serverless PostgreSQL using **NeonDB**
+- 🎨 Modern UI with **HeroUI** + **Tailwind CSS**
+- ⚡ Optimized Next.js App Router architecture
+
+---
+
+## 🛠 Tech Stack
+
+### Frontend
+- **Next.js 15**
+- **React 18**
+- **TypeScript**
+- **Tailwind CSS**
+- **HeroUI**
+- **Framer Motion**
+
+### Backend
+- **Next.js App Router**
+- **Clerk Authentication**
+- **Drizzle ORM**
+- **PostgreSQL (NeonDB)**
+
+### DevOps
+- **Docker**
+- Docker Compose (if applicable)
+
+---
+
+## 📂 Project Structure
+
+```
+src/
+├── app/ # App Router pages & layouts
+├── components/ # Reusable UI components
+├── lib/ # DB, auth, utilities
+├── styles/ # Global styles
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Getting Started
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Option 1️⃣: Run with Docker (Recommended)
 
-## Learn More
+```bash
+docker build -t droply .
+docker run -p 3000:3000 droply
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Option 2️⃣: Run Locally (Without Docker)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Clone the repository**
+```bash
+git clone https://github.com/your-username/droply.git
+cd droply
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Install dependencies**
+```bash
+npm install
+```
 
-## Deploy on Vercel
+3. **Environment Variables**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Create a `.env` file in the root directory:
+```env
+DATABASE_URL=your_neon_db_url
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+NEXT_PUBLIC_CLERK_FRONTEND_API=https://clerk.your-domain.com
+CLERK_API_KEY=your_clerk_api_key
+
+NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY=your_imagekit_public_key
+NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT=your_imagekit_url_endpoint
+
+IMAGEKIT_PUBLIC_KEY=your_imagekit_public_key
+IMAGEKIT_PRIVATE_KEY=your_imagekit_private_key
+
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+4. **Push DB schema**
+```bash
+npm run db:push
+```
+
+5. **Start the dev server**
+```bash
+npm run dev
+```
+
+Visit http://localhost:3000
+
+## 🧠 How It Works
+
+- User signs up or logs in using Clerk
+- Authenticated users can upload files
+- Files are stored via ImageKit
+- Metadata is persisted using Drizzle ORM + NeonDB
+- Application runs inside Docker containers for consistency

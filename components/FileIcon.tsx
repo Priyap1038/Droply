@@ -10,18 +10,18 @@ import type { File as FileType } from "@/lib/db/schema";
 
 interface FileIconProps {
   file: FileType;
+  className?: string;
 }
 
-export default function FileIcon({ file }: FileIconProps) {
-  if (file.isFolder) return <Folder className="h-5 w-5 text-blue-500" />;
+export default function FileIcon({ file, className = "h-5 w-5" }: FileIconProps) {
+  if (file.isFolder) return <Folder className={`${className} text-primary`} />;
 
   const fileType = file.type.split("/")[0];
   switch (fileType) {
     case "image":
       return (
-        <div className="h-12 w-12 relative overflow-hidden rounded">
+        <div className="h-12 w-12 relative overflow-hidden rounded-xl border border-border">
           <IKImage
-            // urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT!}
             path={file.path}
             transformation={[
               {
@@ -41,12 +41,12 @@ export default function FileIcon({ file }: FileIconProps) {
       );
     case "application":
       if (file.type.includes("pdf")) {
-        return <FileText className="h-5 w-5 text-red-500" />;
+        return <FileText className={`${className} text-destructive`} />;
       }
-      return <FileText className="h-5 w-5 text-orange-500" />;
+      return <FileText className={`${className} text-primary`} />;
     case "video":
-      return <FileText className="h-5 w-5 text-purple-500" />;
+      return <FileText className={`${className} text-indigo-500`} />;
     default:
-      return <FileText className="h-5 w-5 text-gray-500" />;
+      return <FileText className={`${className} text-muted-foreground`} />;
   }
 }

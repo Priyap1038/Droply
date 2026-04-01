@@ -92,38 +92,38 @@ export default function FileActions({
     //   )}
     // </div>
     
-    <div className="flex flex-wrap gap-2 justify-end bg-default-50 dark:bg-gray-800 p-3 rounded-lg shadow-sm">
+    <div className="flex flex-wrap gap-2 justify-end p-2 rounded-xl">
   {/* Download button */}
   {!file.isTrash && !file.isFolder && (
     <Button
-      variant="flat"
+      variant="light"
       size="sm"
       onClick={() => onDownload(file)}
-      className="min-w-0 px-2 text-default-800 dark:text-gray-200 hover:bg-default-100 dark:hover:bg-gray-700 transition-colors rounded-md"
+      className="min-w-0 px-3 text-muted-foreground hover:text-primary transition-all font-bold"
       startContent={<Download className="h-4 w-4" />}
     >
-      <span className="hidden sm:inline">Download</span>
+      <span className="hidden lg:inline">Download</span>
     </Button>
   )}
 
   {/* Star button */}
   {!file.isTrash && (
     <Button
-      variant="flat"
+      variant="light"
       size="sm"
       onClick={() => onStar(file.id)}
-      className="min-w-0 px-2 text-default-800 dark:text-gray-200 hover:bg-default-100 dark:hover:bg-gray-700 transition-colors rounded-md"
+      className="min-w-0 px-3 text-muted-foreground hover:text-warning transition-all font-bold"
       startContent={
         <Star
           className={`h-4 w-4 ${
             file.isStarred
-              ? "text-yellow-400 fill-current"
-              : "text-gray-400"
+              ? "text-warning fill-current"
+              : ""
           }`}
         />
       }
     >
-      <span className="hidden sm:inline">
+      <span className="hidden lg:inline">
         {file.isStarred ? "Unstar" : "Star"}
       </span>
     </Button>
@@ -131,14 +131,14 @@ export default function FileActions({
 
   {/* Trash/Restore button */}
   <Button
-    variant="flat"
+    variant="light"
     size="sm"
     onClick={() => onTrash(file.id)}
-    className={`min-w-0 px-2 ${
+    className={`min-w-0 px-3 font-bold transition-all ${
       file.isTrash
-        ? "text-green-600 hover:bg-green-100 dark:hover:bg-green-800"
-        : "text-default-800 dark:text-gray-200 hover:bg-default-100 dark:hover:bg-gray-700"
-    } transition-colors rounded-md`}
+        ? "text-success hover:bg-success/10"
+        : "text-muted-foreground hover:text-destructive"
+    }`}
     startContent={
       file.isTrash ? (
         <ArrowUpFromLine className="h-4 w-4" />
@@ -147,7 +147,7 @@ export default function FileActions({
       )
     }
   >
-    <span className="hidden sm:inline">
+    <span className="hidden lg:inline">
       {file.isTrash ? "Restore" : "Delete"}
     </span>
   </Button>
@@ -155,14 +155,14 @@ export default function FileActions({
   {/* Delete permanently button */}
   {file.isTrash && (
     <Button
-      variant="flat"
+      variant="solid"
       size="sm"
       color="danger"
       onClick={() => onDelete(file)}
-      className="min-w-0 px-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-800 transition-colors rounded-md"
+      className="min-w-0 px-4 font-bold shadow-lg shadow-danger/20 rounded-lg"
       startContent={<X className="h-4 w-4" />}
     >
-      <span className="hidden sm:inline">Remove</span>
+      <span className="hidden lg:inline">Destroy</span>
     </Button>
   )}
 </div>

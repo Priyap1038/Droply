@@ -1,11 +1,12 @@
-import { auth, getAuth } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import ImageKit from "imagekit";
 import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { files } from "@/lib/db/schema";
 
 export async function POST(request: NextRequest) {
   try {
-    // Clerk authentication (sync, no await)
-    const { userId } = getAuth(request);
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -14,9 +15,10 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const bodyUserId = formData.get("userId") as string;
+    const parentId = formData.get("parentId") as string | null;
 
-    console.log('formdata kys:', Array.from(formData.keys()))
-    
+    console.log("formdata keys:", Array.from(formData.keys()));
+
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
@@ -39,23 +41,42 @@ export async function POST(request: NextRequest) {
 
     // Upload to ImageKit
     const uploadResponse = await imageKit.upload({
-      file: base64File, // base64 string required
+      file: base64File,
       fileName: file.name,
-      folder: "/upload",
+      folder: `/uploads/${userId}`,
+      useUniqueFileName: true,
     });
+
+    // Save file metadata to database
+    const [newFile] = await db
+      .insert(files)
+      .values({
+        name: file.name,
+        path: uploadResponse.filePath,
+        size: file.size,
+        type: file.type,
+        fileUrl: uploadResponse.url,
+        thumbnailUrl: uploadResponse.thumbnailUrl ?? null,
+        userId,
+        parentId: parentId || null,
+        isFolder: false,
+        isStarred: false,
+        isTrash: false,
+      })
+      .returning();
 
     return NextResponse.json(
       {
         message: "File uploaded successfully",
+        file: newFile,
         url: uploadResponse.url,
       },
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("Error saving file:", error);
-
+    console.error("Error uploading file:", error);
     return NextResponse.json(
-      { error: "Failed to save file", details: error.message },
+      { error: "Failed to upload file", details: error?.message || error },
       { status: 500 }
     );
   }

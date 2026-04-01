@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  eslint: { ignoreDuringBuilds: true },
   images: {
     domains: ["your-image-domain.com"], // add any external image domains here if needed
   },

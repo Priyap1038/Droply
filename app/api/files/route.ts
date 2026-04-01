@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
         .select()
         .from(files)
         .where(
-          and(eq(files.userId, userId), eq(files.parentId, parentId.toString())) // ✅ cast explicitly
+          and(eq(files.userId, userId), eq(files.parentId, parentId.toString()))
         );
     } else {
       console.log("Fetching root level files for user:", userId);

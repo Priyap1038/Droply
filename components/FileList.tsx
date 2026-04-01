@@ -10,28 +10,28 @@ import {
   TableRow,
   TableCell,
 } from "@heroui/table";
+import { Tooltip } from "@nextui-org/react";
 import { Divider } from "@heroui/divider";
-import { Tooltip } from "@heroui/tooltip";
 import { Card } from "@heroui/card";
 import { addToast } from "@heroui/toast";
 import { formatDistanceToNow, format } from "date-fns";
-import type { File as FileType } from "@/lib/db/schema";
+import type { File as FileType } from "lib/db/schema";
 import axios from "axios";
-import ConfirmationModal from "@/components/ui/ConfirmationModal";
-import FileEmptyState from "@/components/FileEmptyState";
-import FileIcon from "@/components/FileIcon";
-import FileActions from "@/components/FileActions";
-import FileLoadingState from "@/components/FileLoadingState";
-import FileTabs from "@/components/FileTabs";
-import FolderNavigation from "@/components/FolderNavigation";
-import FileActionButtons from "@/components/FileActionButtons";
-import { cosineDistance } from "drizzle-orm";
+
+import FileEmptyState from "./FileEmptyState";
+import FileIcon from "./FileIcon";
+import FileActions from "./FileActions";
+import FileLoadingState from "./FileLoadingState";
+import FileTabs from "./FileTabs";
+import FolderNavigation from "./FolderNavigation";
+import FileActionButtons from "./FileActionButtons";
+import ConfirmationModal from "./ui/ConfirmationModal";
 
 interface FileListProps {
   userId: string;
   refreshTrigger?: number;
-  onFolderChange?: (folderId: string | null) => void;
-  onImageClick? : (url:String) => void;
+  onFolderChange?: (folderId: string | null, folderName?: string | null) => void;
+  onImageClick?: (url: string) => void;
 }
 
 export default function FileList({
@@ -81,8 +81,8 @@ export default function FileList({
   // Fetch files when userId, refreshTrigger, or currentFolder changes
   useEffect(() => {
     fetchFiles();
-    console.log("fetched file in filelist",fetchFiles())
-    console.log("present files",files)
+    console.log("fetched file in filelist", fetchFiles())
+    console.log("present files", files)
   }, [userId, refreshTrigger, currentFolder]);
 
   // Filter files based on active tab
@@ -123,9 +123,8 @@ export default function FileList({
       const file = files.find((f) => f.id === fileId);
       addToast({
         title: file?.isStarred ? "Removed from Starred" : "Added to Starred",
-        description: `"${file?.name}" has been ${
-          file?.isStarred ? "removed from" : "added to"
-        } your starred files`,
+        description: `"${file?.name}" has been ${file?.isStarred ? "removed from" : "added to"
+          } your starred files`,
         color: "success",
       });
     } catch (error) {
@@ -154,9 +153,8 @@ export default function FileList({
       const file = files.find((f) => f.id === fileId);
       addToast({
         title: responseData.isTrash ? "Moved to Trash" : "Restored from Trash",
-        description: `"${file?.name}" has been ${
-          responseData.isTrash ? "moved to trash" : "restored"
-        }`,
+        description: `"${file?.name}" has been ${responseData.isTrash ? "moved to trash" : "restored"
+          }`,
         color: "success",
       });
     } catch (error) {
@@ -333,7 +331,7 @@ export default function FileList({
 
     // Notify parent component about folder change
     if (onFolderChange) {
-      onFolderChange(folderId);
+      onFolderChange(folderId, folderName);
     }
   };
 
@@ -345,11 +343,13 @@ export default function FileList({
       setFolderPath(newPath);
       const newFolderId =
         newPath.length > 0 ? newPath[newPath.length - 1].id : null;
+      const newFolderName =
+        newPath.length > 0 ? newPath[newPath.length - 1].name : null;
       setCurrentFolder(newFolderId);
 
       // Notify parent component about folder change
       if (onFolderChange) {
-        onFolderChange(newFolderId);
+        onFolderChange(newFolderId, newFolderName);
       }
     }
   };
@@ -362,17 +362,18 @@ export default function FileList({
 
       // Notify parent component about folder change
       if (onFolderChange) {
-        onFolderChange(null);
+        onFolderChange(null, null);
       }
     } else {
       const newPath = folderPath.slice(0, index + 1);
       setFolderPath(newPath);
       const newFolderId = newPath[newPath.length - 1].id;
+      const newFolderName = newPath[newPath.length - 1].name;
       setCurrentFolder(newFolderId);
 
       // Notify parent component about folder change
       if (onFolderChange) {
-        onFolderChange(newFolderId);
+        onFolderChange(newFolderId, newFolderName);
       }
     }
   };
@@ -382,9 +383,9 @@ export default function FileList({
     if (file.isFolder) {
       navigateToFolder(file.id, file.name);
     } else if (file.type.startsWith("image/")) {
-      if(onImageClick){
+      if (onImageClick) {
         onImageClick(file.fileUrl);
-      }else{
+      } else {
 
         openImageViewer(file);
       }
@@ -431,125 +432,95 @@ export default function FileList({
         <FileEmptyState activeTab={activeTab} />
       ) : (
         <Card
-          shadow="sm"
-          className="border border-default-200 bg-default-50 overflow-hidden"
+          shadow="none"
+          className="border border-border bg-card overflow-hidden rounded-3xl"
         >
           <div className="overflow-x-auto">
             <Table
               aria-label="Files table"
-              isStriped
-              color="default"
+              isHeaderSticky
+              color="primary"
               selectionMode="none"
               classNames={{
                 base: "min-w-full",
-                th: "bg-default-100 text-default-800 font-medium text-sm",
-                td: "py-4",
+                th: "bg-muted/50 text-muted-foreground font-bold text-xs uppercase tracking-wider py-4 px-6 border-b border-border",
+                td: "py-5 px-6 border-b border-border/50",
+                tbody: "bg-card",
+                tr: "hover:bg-muted/50 transition-colors duration-200"
               }}
             >
               <TableHeader>
-                <TableColumn>Name</TableColumn>
-                <TableColumn className="hidden sm:table-cell">Type</TableColumn>
-                <TableColumn className="hidden md:table-cell">Size</TableColumn>
+                <TableColumn>NAME</TableColumn>
+                <TableColumn className="hidden sm:table-cell">TYPE</TableColumn>
+                <TableColumn className="hidden md:table-cell">SIZE</TableColumn>
                 <TableColumn className="hidden sm:table-cell">
-                  Added
+                  DATE ADDED
                 </TableColumn>
-                <TableColumn width={240}>Actions</TableColumn>
+                <TableColumn width={200}>ACTIONS</TableColumn>
               </TableHeader>
               <TableBody>
                 {filteredFiles.map((file) => (
                   <TableRow
                     key={file.id}
-                    className={`hover:bg-default-100 transition-colors ${
-                      file.isFolder || file.type.startsWith("image/")
+                    className={`${file.isFolder || file.type.startsWith("image/")
                         ? "cursor-pointer"
                         : ""
-                    }`}
+                      }`}
                     onClick={() => handleItemClick(file)}
                   >
-                    {/* hello  */}
-                    {/* <TableCell>
-                      <div className="flex items-center gap-3">
-                        <FileIcon file={file} />
-                        <div>
-                          <div className="font-medium flex items-center gap-2 text-default-800">
-                            <span className="truncate max-w-[150px] sm:max-w-[200px] md:max-w-[300px]">
-                              {file.name}
-                            </span>
-                            {file.isStarred && (
-                              <Tooltip content="Starred">
-                                <Star
-                                  className="h-4 w-4 text-yellow-400"
-                                  fill="currentColor"
-                                />
-                              </Tooltip>
-                            )}
-                            {file.isFolder && (
-                              <Tooltip content="Folder">
-                                <Folder className="h-3 w-3 text-default-400" />
-                              </Tooltip>
-                            )}
-                            {file.type.startsWith("image/") && (
-                              <Tooltip content="Click to view image">
-                                <ExternalLink className="h-3 w-3 text-default-400" />
-                              </Tooltip>
-                            )}
-                          </div>
-                          <div className="text-xs text-default-500 sm:hidden">
-                            {formatDistanceToNow(new Date(file.createdAt), {
-                              addSuffix: true,
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell> */}
-
                     <TableCell>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-4">
                         {/* 🔹 Show thumbnail only for images */}
-                        {file.type.startsWith("image/") && file.fileUrl && (
-                          <img
-                            src={file.fileUrl}
-                            alt={file.name}
-                            className="w-10 h-10 object-cover rounded"
-                          />
+                        {file.type.startsWith("image/") && file.fileUrl ? (
+                          <div className="relative h-12 w-12 rounded-xl overflow-hidden ring-2 ring-border/50 shadow-sm shrink-0">
+                            <img
+                              src={file.fileUrl}
+                              alt={file.name}
+                              className="h-full w-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                            <FileIcon file={file} className="h-6 w-6 text-primary" />
+                          </div>
                         )}
 
-                        {/* Fallback icon for non-images */}
-                        <FileIcon file={file} />
-
-                        <div>
-                          <div className="font-medium flex items-center gap-2 text-default-800">
-                            <span>{file.name}</span>
-                          </div>
+                        <div className="overflow-hidden">
+                          <p className="font-bold text-foreground truncate max-w-[150px] md:max-w-[250px]">
+                            {file.name}
+                          </p>
+                          <p className="text-[10px] sm:hidden text-muted-foreground mt-0.5">
+                            {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
+                          </p>
                         </div>
                       </div>
                     </TableCell>
 
                     <TableCell className="hidden sm:table-cell">
-                      <div className="text-xs text-default-500">
-                        {file.isFolder ? "Folder" : file.type}
+                      <div className="inline-flex px-2 py-1 rounded-md bg-muted text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
+                        {file.isFolder ? "Folder" : file.type.split('/')[1]?.toUpperCase() || "FILE"}
                       </div>
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      <div className="text-default-700">
+                      <div className="text-sm font-medium text-foreground">
                         {file.isFolder
                           ? "-"
                           : file.size < 1024
-                          ? `${file.size} B`
-                          : file.size < 1024 * 1024
-                          ? `${(file.size / 1024).toFixed(1)} KB`
-                          : `${(file.size / (1024 * 1024)).toFixed(1)} MB`}
+                            ? `${file.size} B`
+                            : file.size < 1024 * 1024
+                              ? `${(file.size / 1024).toFixed(1)} KB`
+                              : `${(file.size / (1024 * 1024)).toFixed(1)} MB`}
                       </div>
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
-                      <div>
-                        <div className="text-default-700">
+                      <div className="space-y-0.5">
+                        <div className="text-sm font-medium text-foreground">
                           {formatDistanceToNow(new Date(file.createdAt), {
                             addSuffix: true,
                           })}
                         </div>
-                        <div className="text-xs text-default-500 mt-1">
-                          {format(new Date(file.createdAt), "MMMM d, yyyy")}
+                        <div className="text-[10px] text-muted-foreground">
+                          {format(new Date(file.createdAt), "MMM d, yyyy")}
                         </div>
                       </div>
                     </TableCell>

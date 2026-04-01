@@ -1,6 +1,6 @@
 "use client";
 
-import { useClerk, SignedIn, SignedOut } from "@clerk/nextjs";
+import { useClerk, SignedIn, SignedOut, useUser } from "@clerk/nextjs";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { CloudUpload, ChevronDown, User, Menu, X } from "lucide-react";
@@ -12,22 +12,11 @@ import {
 } from "@heroui/dropdown";
 import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 
-interface SerializedUser {
-  id: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  imageUrl?: string | null;
-  username?: string | null;
-  emailAddress?: string | null;
-}
-
-interface NavbarProps {
-  user?: SerializedUser | null;
-}
-
-export default function Navbar({ user }: NavbarProps) {
+export default function Navbar() {
+  const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
   const router = useRouter();
   const pathname = usePathname();
@@ -102,431 +91,233 @@ export default function Navbar({ user }: NavbarProps) {
     });
   };
 
-  // Process user data with defaults if not provided
-  const userDetails = {
-    fullName: user
-      ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
-      : "",
-    initials: user
-      ? `${user.firstName || ""} ${user.lastName || ""}`
-          .trim()
-          .split(" ")
-          .map((name) => name?.[0] || "")
-          .join("")
-          .toUpperCase() || "U"
-      : "U",
-    displayName: user
-      ? user.firstName && user.lastName
-        ? `${user.firstName} ${user.lastName}`
-        : user.firstName || user.username || user.emailAddress || "User"
-      : "User",
-    email: user?.emailAddress || "",
-  };
+  // Process user data with memoization for performance
+  const userDetails = useMemo(() => {
+    if (!isLoaded || !user) {
+      return { displayName: "User", initials: "U", email: "" };
+    }
+
+    const email = user.emailAddresses?.[0]?.emailAddress || "";
+    return {
+      initials: (user.firstName?.[0] || user.username?.[0] || email?.[0] || "U").toUpperCase(),
+      displayName: user.firstName || 
+                   user.username || 
+                   (email ? email.split('@')[0] : "User"),
+      email: email,
+    };
+  }, [user, isLoaded]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   return (
-    // <header
-    //   className={`bg-default-50 border-b border-default-200 sticky top-0 z-50 transition-shadow ${isScrolled ? "shadow-sm" : ""}`}
-    // >
-    //   <div className="container mx-auto py-3 md:py-4 px-4 md:px-6">
-    //     <div className="flex justify-between items-center">
-    //       {/* Logo */}
-    //       <Link href="/" className="flex items-center gap-2 z-10">
-    //         <CloudUpload className="h-6 w-6 text-primary" />
-    //         <h1 className="text-xl font-bold">Droply</h1>
-    //       </Link>
-
-    //       {/* Desktop Navigation */}
-    //       <div className="hidden md:flex gap-4 items-center">
-    //         {/* Show these buttons when user is signed out */}
-    //         <SignedOut>
-    //           <Link href="/sign-in">
-    //             <Button variant="flat" color="primary">
-    //               Sign In
-    //             </Button>
-    //           </Link>
-    //           <Link href="/sign-up">
-    //             <Button variant="solid" color="primary">
-    //               Sign Up
-    //             </Button>
-    //           </Link>
-    //         </SignedOut>
-
-    //         {/* Show these when user is signed in */}
-    //         <SignedIn>
-    //           <div className="flex items-center gap-4">
-    //             {!isOnDashboard && (
-    //               <Link href="/dashboard">
-    //                 <Button variant="flat" color="primary">
-    //                   Dashboard
-    //                 </Button>
-    //               </Link>
-    //             )}
-    //             <Dropdown>
-    //               <DropdownTrigger>
-    //                 <Button
-    //                   variant="flat"
-    //                   className="p-0 bg-transparent min-w-0"
-    //                   endContent={<ChevronDown className="h-4 w-4 ml-2" />}
-    //                 >
-    //                   <div className="flex items-center gap-2">
-    //                     <Avatar
-    //                       name={userDetails.initials}
-    //                       size="sm"
-    //                       src={user?.imageUrl || undefined}
-    //                       className="h-8 w-8 flex-shrink-0"
-    //                       fallback={<User className="h-4 w-4" />}
-    //                     />
-    //                     <span className="text-default-600 hidden sm:inline">
-    //                       {userDetails.displayName}
-    //                     </span>
-    //                   </div>
-    //                 </Button>
-    //               </DropdownTrigger>
-    //               <DropdownMenu aria-label="User actions">
-    //                 <DropdownItem
-    //                   key="profile"
-    //                   description={userDetails.email || "View your profile"}
-    //                   onClick={() => router.push("/dashboard?tab=profile")}
-    //                 >
-    //                   Profile
-    //                 </DropdownItem>
-    //                 <DropdownItem
-    //                   key="files"
-    //                   description="Manage your files"
-    //                   onClick={() => router.push("/dashboard")}
-    //                 >
-    //                   My Files
-    //                 </DropdownItem>
-    //                 <DropdownItem
-    //                   key="logout"
-    //                   description="Sign out of your account"
-    //                   className="text-danger"
-    //                   color="danger"
-    //                   onClick={handleSignOut}
-    //                 >
-    //                   Sign Out
-    //                 </DropdownItem>
-    //               </DropdownMenu>
-    //             </Dropdown>
-    //           </div>
-    //         </SignedIn>
-    //       </div>
-
-    //       {/* Mobile Menu Button */}
-    //       <div className="md:hidden flex items-center gap-2">
-    //         <SignedIn>
-    //           <Avatar
-    //             name={userDetails.initials}
-    //             size="sm"
-    //             src={user?.imageUrl || undefined}
-    //             className="h-8 w-8 flex-shrink-0"
-    //             fallback={<User className="h-4 w-4" />}
-    //           />
-    //         </SignedIn>
-    //         <button
-    //           className="z-50 p-2"
-    //           onClick={toggleMobileMenu}
-    //           aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-    //           data-menu-button="true"
-    //         >
-    //           {isMobileMenuOpen ? (
-    //             <X className="h-6 w-6 text-default-700" />
-    //           ) : (
-    //             <Menu className="h-6 w-6 text-default-700" />
-    //           )}
-    //         </button>
-    //       </div>
-
-    //       {/* Mobile Menu Overlay */}
-    //       {isMobileMenuOpen && (
-    //         <div
-    //           className="fixed inset-0 bg-black/20 z-40 md:hidden"
-    //           onClick={() => setIsMobileMenuOpen(false)}
-    //           aria-hidden="true"
-    //         />
-    //       )}
-
-    //       {/* Mobile Menu */}
-    //       <div
-    //         ref={mobileMenuRef}
-    //         className={`fixed top-0 right-0 bottom-0 w-4/5 max-w-sm bg-default-50 z-40 flex flex-col pt-20 px-6 shadow-xl transition-transform duration-300 ease-in-out ${
-    //           isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-    //         } md:hidden`}
-    //       >
-    //         <SignedOut>
-    //           <div className="flex flex-col gap-4 items-center">
-    //             <Link
-    //               href="/sign-in"
-    //               className="w-full"
-    //               onClick={() => setIsMobileMenuOpen(false)}
-    //             >
-    //               <Button variant="flat" color="primary" className="w-full">
-    //                 Sign In
-    //               </Button>
-    //             </Link>
-    //             <Link
-    //               href="/sign-up"
-    //               className="w-full"
-    //               onClick={() => setIsMobileMenuOpen(false)}
-    //             >
-    //               <Button variant="solid" color="primary" className="w-full">
-    //                 Sign Up
-    //               </Button>
-    //             </Link>
-    //           </div>
-    //         </SignedOut>
-
-    //         <SignedIn>
-    //           <div className="flex flex-col gap-6">
-    //             {/* User info */}
-    //             <div className="flex items-center gap-3 py-4 border-b border-default-200">
-    //               <Avatar
-    //                 name={userDetails.initials}
-    //                 size="md"
-    //                 src={user?.imageUrl || undefined}
-    //                 className="h-10 w-10 flex-shrink-0"
-    //                 fallback={<User className="h-5 w-5" />}
-    //               />
-    //               <div>
-    //                 <p className="font-medium">{userDetails.displayName}</p>
-    //                 <p className="text-sm text-default-500">
-    //                   {userDetails.email}
-    //                 </p>
-    //               </div>
-    //             </div>
-
-    //             {/* Navigation links */}
-    //             <div className="flex flex-col gap-4">
-    //               {!isOnDashboard && (
-    //                 <Link
-    //                   href="/dashboard"
-    //                   className="py-2 px-3 hover:bg-default-100 rounded-md transition-colors"
-    //                   onClick={() => setIsMobileMenuOpen(false)}
-    //                 >
-    //                   Dashboard
-    //                 </Link>
-    //               )}
-    //               <Link
-    //                 href="/dashboard?tab=profile"
-    //                 className="py-2 px-3 hover:bg-default-100 rounded-md transition-colors"
-    //                 onClick={() => setIsMobileMenuOpen(false)}
-    //               >
-    //                 Profile
-    //               </Link>
-    //               <button
-    //                 className="py-2 px-3 text-left text-danger hover:bg-danger-50 rounded-md transition-colors mt-4"
-    //                 onClick={() => {
-    //                   setIsMobileMenuOpen(false);
-    //                   handleSignOut();
-    //                 }}
-    //               >
-    //                 Sign Out
-    //               </button>
-    //             </div>
-    //           </div>
-    //         </SignedIn>
-    //       </div>
-    //     </div>
-    //   </div>
-    // </header>
-
     <header
-  className={`bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200 sticky top-0 z-50 transition-shadow ${
-    isScrolled ? "shadow-md" : ""
-  }`}
->
-  <div className="container mx-auto py-3 md:py-4 px-4 md:px-6">
-    <div className="flex justify-between items-center">
-      {/* Logo */}
-      <Link href="/" className="flex items-center gap-2 z-10">
-        <CloudUpload className="h-6 w-6 text-blue-600" />
-        <h1 className="text-xl font-bold text-blue-900">Droply</h1>
-      </Link>
-
-      {/* Desktop Navigation */}
-      <div className="hidden md:flex gap-4 items-center">
-        <SignedOut>
-          <Link href="/sign-in">
-            <Button variant="flat" className="text-blue-700 hover:bg-blue-100">
-              Sign In
-            </Button>
+      className={`bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-50 transition-all duration-300 ${
+        isScrolled ? "shadow-sm py-2" : "py-3 md:py-4"
+      }`}
+    >
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="flex justify-between items-center">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 z-10 hover:opacity-90 transition-all">
+            <div className="bg-primary p-2 rounded-xl shadow-sm">
+              <CloudUpload className="h-5 w-5 text-white" />
+            </div>
+            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/80 tracking-tight">
+              Droply
+            </h1>
           </Link>
-          <Link href="/sign-up">
-            <Button variant="solid" className="bg-blue-600 text-white hover:bg-blue-700">
-              Sign Up
-            </Button>
-          </Link>
-        </SignedOut>
 
-        <SignedIn>
-          <div className="flex items-center gap-4">
-            {!isOnDashboard && (
-              <Link href="/dashboard">
-                <Button variant="flat" className="text-blue-700 hover:bg-blue-100">
-                  Dashboard
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex gap-4 items-center">
+            <ThemeSwitcher />
+            <SignedOut>
+              <Link href="/sign-in">
+                <Button variant="light" className="font-semibold text-foreground/80 hover:text-foreground">
+                  Sign In
                 </Button>
               </Link>
-            )}
-            <Dropdown>
-              <DropdownTrigger>
-                <Button
-                  variant="flat"
-                  className="p-0 bg-transparent min-w-0"
-                  endContent={<ChevronDown className="h-4 w-4 ml-2" />}
-                >
-                  <div className="flex items-center gap-2">
-                    <Avatar
-                      name={userDetails.initials}
-                      size="sm"
-                      src={user?.imageUrl || undefined}
-                      className="h-8 w-8 border border-blue-300"
-                      fallback={<User className="h-4 w-4" />}
-                    />
-                    <span className="text-blue-800 font-medium hidden sm:inline">
-                      {userDetails.displayName}
-                    </span>
-                  </div>
+              <Link href="/sign-up">
+                <Button variant="solid" color="primary" className="font-semibold shadow-lg shadow-primary/20 transition-all hover:scale-[1.02]">
+                  Sign Up
                 </Button>
-              </DropdownTrigger>
-              <DropdownMenu aria-label="User actions">
-                <DropdownItem
-                  key="profile"
-                  description={userDetails.email || "View your profile"}
-                  onClick={() => router.push("/dashboard?tab=profile")}
-                >
-                  Profile
-                </DropdownItem>
-                <DropdownItem
-                  key="files"
-                  description="Manage your files"
-                  onClick={() => router.push("/dashboard")}
-                >
-                  My Files
-                </DropdownItem>
-                <DropdownItem
-                  key="logout"
-                  className="text-danger"
-                  color="danger"
-                  onClick={handleSignOut}
-                >
-                  Sign Out
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
+              </Link>
+            </SignedOut>
+
+            <SignedIn>
+              <div className="flex items-center gap-4">
+                {!isOnDashboard && (
+                  <Link href="/dashboard">
+                    <Button variant="flat" color="primary" className="font-semibold">
+                      Dashboard
+                    </Button>
+                  </Link>
+                )}
+                <Dropdown placement="bottom-end">
+                  <DropdownTrigger>
+                    <Button
+                      variant="light"
+                      className="px-3 py-2 h-auto bg-white/50 hover:bg-white border border-border/50 transition-all rounded-2xl focus:ring-0 focus:outline-none shadow-sm"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          name={userDetails.initials}
+                          size="sm"
+                          src={user?.imageUrl || undefined}
+                          className="h-8 w-8 shadow-sm border border-border"
+                          fallback={<User className="h-4 w-4" />}
+                        />
+                        <span className="text-foreground font-bold hidden sm:inline whitespace-nowrap">
+                          {userDetails.displayName}
+                        </span>
+                        <ChevronDown className="h-3 w-3 text-muted-foreground opacity-60" />
+                      </div>
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownMenu aria-label="User actions" variant="flat" className="p-2">
+                    <DropdownItem
+                      key="profile"
+                      description={userDetails.email || "View your profile"}
+                      startContent={<User className="h-4 w-4 mr-1 text-primary" />}
+                      className="rounded-xl h-14 hover:bg-primary/5"
+                      onClick={() => router.push("/dashboard?tab=profile")}
+                    >
+                      <span className="font-bold">Profile</span>
+                    </DropdownItem>
+                    <DropdownItem
+                      key="files"
+                      description="Manage your files"
+                      startContent={<CloudUpload className="h-4 w-4 mr-1 text-primary" />}
+                      className="rounded-xl h-14 hover:bg-primary/5"
+                      onClick={() => router.push("/dashboard")}
+                    >
+                      <span className="font-bold">My Files</span>
+                    </DropdownItem>
+                    <DropdownItem
+                      key="logout"
+                      className="text-danger rounded-xl h-12 hover:bg-danger/5"
+                      color="danger"
+                      startContent={<X className="h-4 w-4 mr-1" />}
+                      onClick={handleSignOut}
+                    >
+                      <span className="font-bold">Sign Out</span>
+                    </DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+              </div>
+            </SignedIn>
           </div>
-        </SignedIn>
-      </div>
 
-      {/* Mobile Menu Button */}
-      <div className="md:hidden flex items-center gap-2">
-        <SignedIn>
-          <Avatar
-            name={userDetails.initials}
-            size="sm"
-            src={user?.imageUrl || undefined}
-            className="h-8 w-8 border border-blue-300"
-            fallback={<User className="h-4 w-4" />}
-          />
-        </SignedIn>
-        <button
-          className="z-50 p-2"
-          onClick={toggleMobileMenu}
-          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-        >
-          {isMobileMenuOpen ? (
-            <X className="h-6 w-6 text-blue-800" />
-          ) : (
-            <Menu className="h-6 w-6 text-blue-800" />
-          )}
-        </button>
-      </div>
-
-      {/* Mobile Menu Overlay */}
-      {isMobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/20 z-40 md:hidden"
-          onClick={() => setIsMobileMenuOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Mobile Menu */}
-      <div
-        ref={mobileMenuRef}
-        className={`fixed top-0 right-0 bottom-0 w-4/5 max-w-sm bg-white z-50 flex flex-col pt-20 px-6 shadow-2xl transition-transform duration-300 ease-in-out ${
-          isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-        } md:hidden`}
-      >
-        <SignedOut>
-          <div className="flex flex-col gap-4 items-center">
-            <Link href="/sign-in" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-              <Button variant="flat" color="primary" className="w-full">
-                Sign In
-              </Button>
-            </Link>
-            <Link href="/sign-up" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
-              <Button variant="solid" color="primary" className="w-full">
-                Sign Up
-              </Button>
-            </Link>
-          </div>
-        </SignedOut>
-
-        <SignedIn>
-          <div className="flex flex-col gap-6">
-            {/* User Info */}
-            <div className="flex items-center gap-3 py-4 border-b border-blue-200 bg-blue-50 px-3 rounded-md shadow-sm">
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center gap-3">
+            <ThemeSwitcher />
+            <SignedIn>
               <Avatar
                 name={userDetails.initials}
-                size="md"
+                size="sm"
                 src={user?.imageUrl || undefined}
-                className="h-10 w-10"
-                fallback={<User className="h-5 w-5" />}
+                className="h-8 w-8 ring-2 ring-primary/20"
+                fallback={<User className="h-4 w-4" />}
               />
-              <div>
-                <p className="font-medium text-blue-900">{userDetails.displayName}</p>
-                <p className="text-sm text-blue-700">{userDetails.email}</p>
-              </div>
-            </div>
-
-            {/* Navigation */}
-            <div className="flex flex-col gap-4">
-              {!isOnDashboard && (
-                <Link
-                  href="/dashboard"
-                  className="py-2 px-3 hover:bg-blue-100 rounded-md"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
+            </SignedIn>
+            <button
+              className="z-50 p-2 hover:bg-muted rounded-full transition-colors"
+              onClick={toggleMobileMenu}
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            >
+              {isMobileMenuOpen ? (
+                <X className="h-6 w-6 text-foreground" />
+              ) : (
+                <Menu className="h-6 w-6 text-foreground" />
               )}
-              <Link
-                href="/dashboard?tab=profile"
-                className="py-2 px-3 hover:bg-blue-100 rounded-md"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Profile
-              </Link>
-              <button
-                className="py-2 px-3 text-left text-red-600 hover:bg-red-100 rounded-md mt-4"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  handleSignOut();
-                }}
-              >
-                Sign Out
-              </button>
-            </div>
+            </button>
           </div>
-        </SignedIn>
-      </div>
-    </div>
-  </div>
-</header>
 
+          {/* Mobile Menu Overlay */}
+          {isMobileMenuOpen && (
+            <div
+              className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 md:hidden animate-in fade-in duration-200"
+              onClick={() => setIsMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
+          )}
+
+          {/* Mobile Menu */}
+          <div
+            ref={mobileMenuRef}
+            className={`fixed top-0 right-0 bottom-0 w-4/5 max-w-sm bg-background border-l border-border z-50 flex flex-col pt-20 px-6 shadow-2xl transition-transform duration-300 ease-in-out ${
+              isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+            } md:hidden`}
+          >
+            <SignedOut>
+              <div className="flex flex-col gap-4 items-center">
+                <Link href="/sign-in" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button variant="flat" className="w-full font-medium">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href="/sign-up" className="w-full" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button variant="solid" color="primary" className="w-full font-medium shadow-md">
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
+            </SignedOut>
+
+            <SignedIn>
+              <div className="flex flex-col gap-6">
+                {/* User Info */}
+                <div className="flex items-center gap-3 py-4 border-b border-border mb-2">
+                  <Avatar
+                    name={userDetails.initials}
+                    size="md"
+                    src={user?.imageUrl || undefined}
+                    className="h-12 w-12 ring-2 ring-primary/20"
+                    fallback={<User className="h-6 w-6" />}
+                  />
+                  <div className="overflow-hidden">
+                    <p className="font-bold text-foreground truncate">{userDetails.displayName}</p>
+                    <p className="text-sm text-muted-foreground truncate">{userDetails.email}</p>
+                  </div>
+                </div>
+
+                {/* Navigation */}
+                <div className="flex flex-col gap-2">
+                  {!isOnDashboard && (
+                    <Link
+                      href="/dashboard"
+                      className="py-3 px-4 hover:bg-muted rounded-xl transition-colors font-medium flex items-center gap-3"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <CloudUpload className="h-5 w-5 text-primary" />
+                      Dashboard
+                    </Link>
+                  )}
+                  <Link
+                    href="/dashboard?tab=profile"
+                    className="py-3 px-4 hover:bg-muted rounded-xl transition-colors font-medium flex items-center gap-3"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <User className="h-5 w-5 text-primary" />
+                    Profile
+                  </Link>
+                  <button
+                    className="py-3 px-4 text-left text-danger hover:bg-danger/10 rounded-xl transition-colors mt-6 font-medium flex items-center gap-3"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      handleSignOut();
+                    }}
+                  >
+                    <X className="h-5 w-5" />
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            </SignedIn>
+          </div>
+        </div>
+      </div>
+    </header>
   );
 }

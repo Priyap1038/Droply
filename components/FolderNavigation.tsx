@@ -15,32 +15,33 @@ export default function FolderNavigation({
   navigateToPathFolder,
 }: FolderNavigationProps) {
   return (
-    <div className="flex flex-wrap items-center gap-2 text-sm overflow-x-auto pb-2">
+    <div className="flex flex-wrap items-center gap-3 text-sm overflow-x-auto pb-3">
       <Button
-        variant="flat"
+        variant="bordered"
         size="sm"
         isIconOnly
         onClick={navigateUp}
         isDisabled={folderPath.length === 0}
+        className="rounded-xl border-border bg-card hover:bg-muted transition-all"
       >
         <ArrowUpFromLine className="h-4 w-4" />
       </Button>
       <Button
-        variant="flat"
+        variant="bordered"
         size="sm"
         onClick={() => navigateToPathFolder(-1)}
-        className={folderPath.length === 0 ? "font-bold" : ""}
+        className={`${folderPath.length === 0 ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border hover:bg-muted"} rounded-xl font-bold transition-all px-4`}
       >
-        Home
+        Library
       </Button>
       {folderPath.map((folder, index) => (
-        <div key={folder.id} className="flex items-center">
-          <span className="mx-1 text-default-400">/</span>
+        <div key={folder.id} className="flex items-center gap-2">
+          <span className="text-muted-foreground opacity-50 font-bold">/</span>
           <Button
-            variant="flat"
+            variant="bordered"
             size="sm"
             onClick={() => navigateToPathFolder(index)}
-            className={`${index === folderPath.length - 1 ? "font-bold" : ""} text-ellipsis overflow-hidden max-w-[150px]`}
+            className={`${index === folderPath.length - 1 ? "bg-primary/10 text-primary border-primary/20" : "bg-card border-border hover:bg-muted"} rounded-xl font-bold transition-all px-4 text-ellipsis overflow-hidden max-w-[150px]`}
             title={folder.name}
           >
             {folder.name}

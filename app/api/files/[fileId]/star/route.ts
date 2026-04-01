@@ -17,32 +17,32 @@ export async function PATCH(
     const { fileId } = await props.params;
 
     if (!fileId) {
-      return NextResponse.json({ error: "File is required" }, { status: 401 });
+      return NextResponse.json({ error: "File ID is required" }, { status: 400 });
     }
 
+    // Get the current file
     const [file] = await db
       .select()
       .from(files)
       .where(and(eq(files.id, fileId), eq(files.userId, userId)));
 
-    if (file) {
-      return NextResponse.json({ error: "File not found" }, { status: 401 });
+    if (!file) {
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
 
-    // toggle the star status
-
-    const [updatedFiles] = await db
+    // Toggle the star status
+    const [updatedFile] = await db
       .update(files)
-      .set({ isStarred: !files.isStarred })
+      .set({ isStarred: !file.isStarred })
       .where(and(eq(files.id, fileId), eq(files.userId, userId)))
       .returning();
 
-    // log the updated file
-    const updatedFile = updatedFiles.id;
-
     return NextResponse.json(updatedFile);
   } catch (error) {
-    console.log("Error starring file:", error)
-    return NextResponse.json({error:"Failed to update the file"},{status:500})
+    console.error("Error starring file:", error);
+    return NextResponse.json(
+      { error: "Failed to update the file" },
+      { status: 500 }
+    );
   }
 }
