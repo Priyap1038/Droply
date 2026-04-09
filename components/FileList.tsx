@@ -26,6 +26,7 @@ import FileTabs from "./FileTabs";
 import FolderNavigation from "./FolderNavigation";
 import FileActionButtons from "./FileActionButtons";
 import ConfirmationModal from "./ui/ConfirmationModal";
+import RenameModal from "./ui/RenameModal";
 
 interface FileListProps {
   userId: string;
@@ -52,6 +53,9 @@ export default function FileList({
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [emptyTrashModalOpen, setEmptyTrashModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<FileType | null>(null);
+
+  const [renameModalOpen, setRenameModalOpen] = useState(false);
+  const [fileToRename, setFileToRename] = useState<FileType | null>(null);
 
   // Fetch files
   const fetchFiles = async () => {
@@ -223,6 +227,46 @@ export default function FileList({
       addToast({
         title: "Action Failed",
         description: "We couldn't empty the trash. Please try again later.",
+        color: "danger",
+      });
+    }
+  };
+
+  const handleShareFile = async (file: FileType) => {
+    try {
+      const url = file.fileUrl || `${window.location.origin}/dashboard?folder=${file.id}`;
+      await navigator.clipboard.writeText(url);
+      addToast({
+        title: "Link Copied!",
+        description: `A shareable link for "${file.name}" has been copied.`,
+        color: "success",
+      });
+    } catch (error) {
+      addToast({
+        title: "Copy Failed",
+        description: "Could not copy link to clipboard.",
+        color: "danger",
+      });
+    }
+  };
+
+  const handleRenameFile = async (newName: string) => {
+    if (!fileToRename) return;
+    try {
+      const response = await axios.patch(`/api/files/${fileToRename.id}/rename`, { name: newName });
+      if (response.data.success) {
+        setFiles(files.map(f => f.id === fileToRename.id ? { ...f, name: newName } : f));
+        addToast({
+          title: "Rename Successful",
+          description: `Renamed to "${newName}"`,
+          color: "success",
+        });
+        setRenameModalOpen(false);
+      }
+    } catch (error) {
+      addToast({
+        title: "Rename Failed",
+        description: "We couldn't rename the item. Please try again.",
         color: "danger",
       });
     }
@@ -534,6 +578,11 @@ export default function FileList({
                           setDeleteModalOpen(true);
                         }}
                         onDownload={handleDownloadFile}
+                        onShare={handleShareFile}
+                        onRename={(file) => {
+                          setFileToRename(file);
+                          setRenameModalOpen(true);
+                        }}
                       />
                     </TableCell>
                   </TableRow>
@@ -576,6 +625,14 @@ export default function FileList({
         onConfirm={handleEmptyTrash}
         isDangerous={true}
         warningMessage={`You are about to permanently delete all ${trashCount} items in your trash. These files will be permanently removed from your account and cannot be recovered.`}
+      />
+
+      {/* Rename modal */}
+      <RenameModal
+        isOpen={renameModalOpen}
+        onOpenChange={setRenameModalOpen}
+        currentName={fileToRename?.name || ""}
+        onConfirm={handleRenameFile}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, Trash, X, ArrowUpFromLine, Download } from "lucide-react";
+import { Star, Trash, X, ArrowUpFromLine, Download, Link, Edit2 } from "lucide-react";
 import { Button } from "@heroui/button";
 import { File as FileType } from "@/lib/db/schema";
 
@@ -10,6 +10,8 @@ interface FileActionsProps {
   onTrash: (id: string) => void;
   onDelete: (file: FileType) => void;
   onDownload: (file: FileType) => void;
+  onShare: (file: FileType) => void;
+  onRename: (file: FileType) => void;
 }
 
 export default function FileActions({
@@ -18,6 +20,8 @@ export default function FileActions({
   onTrash,
   onDelete,
   onDownload,
+  onShare,
+  onRename,
 }: FileActionsProps) {
   return (
     // <div className="flex flex-wrap gap-2 justify-end">
@@ -93,6 +97,32 @@ export default function FileActions({
     // </div>
     
     <div className="flex flex-wrap gap-2 justify-end p-2 rounded-xl">
+  {/* Share button */}
+  {!file.isTrash && (
+    <Button
+      variant="light"
+      size="sm"
+      onClick={() => onShare(file)}
+      className="min-w-0 px-3 text-muted-foreground hover:text-primary transition-all font-bold"
+      startContent={<Link className="h-4 w-4" />}
+    >
+      <span className="hidden lg:inline">Share Shareable Link</span>
+    </Button>
+  )}
+
+  {/* Rename button */}
+  {!file.isTrash && (
+    <Button
+      variant="light"
+      size="sm"
+      onClick={() => onRename(file)}
+      className="min-w-0 px-3 text-muted-foreground hover:text-primary transition-all font-bold"
+      startContent={<Edit2 className="h-4 w-4" />}
+    >
+      <span className="hidden lg:inline">Rename</span>
+    </Button>
+  )}
+
   {/* Download button */}
   {!file.isTrash && !file.isFolder && (
     <Button

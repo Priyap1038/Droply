@@ -11,7 +11,8 @@ It focuses on secure authentication, scalable backend architecture, and a clean 
 
 - 🔐 Authentication & user management using **Clerk**
 - 🐳 Dockerized development & deployment setup
-- 📁 File upload & management using **ImageKit**
+- 📁 File upload, rename & management using **ImageKit**
+- 🔗 **Generate Shareable Links** for uploaded files
 - 🗂️ Database integration with **Drizzle ORM**
 - ☁️ Serverless PostgreSQL using **NeonDB**
 - 🎨 Modern UI with **HeroUI** + **Tailwind CSS**
