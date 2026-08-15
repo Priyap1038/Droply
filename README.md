@@ -109,7 +109,7 @@ npm run db:push
 npm run dev
 ```
 
-Visit http://localhost:3000
+Visit https://droply-ashen.vercel.app/
 
 ## 🧠 How It Works
 
